@@ -24,6 +24,12 @@ def output_dir(tmpdir):
 
 
 @pytest.fixture
+def hooks_dir(tmpdir):
+    """Fixture to prepare test hooks directory."""
+    return str(tmpdir.mkdir('hooks'))
+
+
+@pytest.fixture
 def template(tmpdir):
     """Fixture to prepare test template directory."""
     template_dir = tmpdir.mkdir('template')
@@ -62,6 +68,7 @@ def test_api_invocation(mocker, template, output_dir, context):
         skip_if_file_exists=False,
         output_dir=output_dir,
         accept_hooks=True,
+        hooks_dir='hooks',
     )
 
 
@@ -78,4 +85,22 @@ def test_default_output_dir(mocker, template, context):
         skip_if_file_exists=False,
         output_dir='.',
         accept_hooks=True,
+        hooks_dir='hooks',
+    )
+
+
+def test_passing_hooks_dir(mocker, template, hooks_dir, context):
+    """Verify hooks dir location is correctly passed."""
+    mock_gen_files = mocker.patch('cookiecutter.main.generate_files')
+
+    main.cookiecutter(template, hooks_dir=hooks_dir)
+
+    mock_gen_files.assert_called_once_with(
+        repo_dir=template,
+        context=context,
+        overwrite_if_exists=False,
+        skip_if_file_exists=False,
+        output_dir='.',
+        accept_hooks=True,
+        hooks_dir=hooks_dir,
     )

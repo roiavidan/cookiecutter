@@ -141,6 +141,12 @@ def list_installed_templates(default_config, passed_config_file):
 @click.option(
     '-l', '--list-installed', is_flag=True, help='List currently installed templates.'
 )
+@click.option(
+    '--hooks-dir',
+    default='hooks',
+    type=click.Path(),
+    help='Path where hooks are located',
+)
 def main(
     template,
     extra_context,
@@ -158,6 +164,7 @@ def main(
     accept_hooks,
     replay_file,
     list_installed,
+    hooks_dir,
 ):
     """Create a project from a Cookiecutter project template (TEMPLATE).
 
@@ -202,6 +209,7 @@ def main(
             directory=directory,
             skip_if_file_exists=skip_if_file_exists,
             accept_hooks=_accept_hooks,
+            hooks_dir=hooks_dir,
         )
     except (
         OutputDirExistsException,

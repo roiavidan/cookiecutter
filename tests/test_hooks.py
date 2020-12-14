@@ -201,7 +201,9 @@ class TestExternalHooks(object):
 
         with utils.work_in(self.repo_path):
             with pytest.raises(exceptions.FailedHookException) as excinfo:
-                hooks.run_hook('pre_gen_project', tests_dir, {})
+                hooks.run_hook(
+                    'pre_gen_project', os.path.abspath('hooks'), tests_dir, {}
+                )
             assert 'Hook script failed' in str(excinfo.value)
 
 

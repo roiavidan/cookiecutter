@@ -227,12 +227,13 @@ def ensure_dir_is_templated(dirname):
 
 
 def _run_hook_from_repo_dir(
-    repo_dir, hook_name, project_dir, context, delete_project_on_failure
+    repo_dir, hook_name, hooks_dir, project_dir, context, delete_project_on_failure
 ):
     """Run hook from repo directory, clean project directory if hook fails.
 
     :param repo_dir: Project template input directory.
     :param hook_name: The hook to execute.
+    :param hooks_dir: Path where hooks are located.
     :param project_dir: The directory to execute the script from.
     :param context: Cookiecutter project context.
     :param delete_project_on_failure: Delete the project directory on hook
@@ -240,7 +241,7 @@ def _run_hook_from_repo_dir(
     """
     with work_in(repo_dir):
         try:
-            run_hook(hook_name, project_dir, context)
+            run_hook(hook_name, os.path.abspath(hooks_dir), project_dir, context)
         except FailedHookException:
             if delete_project_on_failure:
                 rmtree(project_dir)
@@ -259,6 +260,7 @@ def generate_files(
     overwrite_if_exists=False,
     skip_if_file_exists=False,
     accept_hooks=True,
+    hooks_dir='hooks',
 ):
     """Render the templates and saves them to files.
 
@@ -268,6 +270,7 @@ def generate_files(
     :param overwrite_if_exists: Overwrite the contents of the output directory
         if it exists.
     :param accept_hooks: Accept pre and post hooks if set to `True`.
+    :param hooks_dir: Path where hooks are located.
     """
     template_dir = find_template(repo_dir)
     logger.debug('Generating project from %s...', template_dir)
@@ -302,7 +305,12 @@ def generate_files(
 
     if accept_hooks:
         _run_hook_from_repo_dir(
-            repo_dir, 'pre_gen_project', project_dir, context, delete_project_on_failure
+            repo_dir,
+            'pre_gen_project',
+            hooks_dir,
+            project_dir,
+            context,
+            delete_project_on_failure,
         )
 
     with work_in(template_dir):
@@ -374,6 +382,7 @@ def generate_files(
         _run_hook_from_repo_dir(
             repo_dir,
             'post_gen_project',
+            hooks_dir,
             project_dir,
             context,
             delete_project_on_failure,
